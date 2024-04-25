@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 import { Line } from 'react-chartjs-2';
 import Chart, {
   LinearScale,
   LineElement,
   PointElement,
   CategoryScale,
+  Tooltip,
 } from 'chart.js/auto';
 import GraphHeader from './components/GraphHeader';
 import Zones from './components/Zones';
+
 const App: React.FC = () => {
   useEffect(() => {
-    Chart.register(LinearScale, LineElement, PointElement, CategoryScale);
+    Chart.register(
+      LinearScale,
+      LineElement,
+      PointElement,
+      CategoryScale,
+      Tooltip
+    );
   }, []);
 
   const [chartType, setChartType] = useState<string>('temperature');
@@ -25,51 +34,46 @@ const App: React.FC = () => {
 
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
-    var dates = [];
+    let dates: string[] = [];
 
-    if (period === 'Last 4 Hours') {
-      for (let i = 0; i < 4; i++) {
-        const date = new Date(Date.now() - i * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === 'Last 12 Hours') {
-      for (let i = 0; i < 12; i++) {
-        const date = new Date(Date.now() - i * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === 'Last 24 Hours') {
-      for (let i = 0; i < 24; i++) {
-        const date = new Date(Date.now() - i * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === 'Last 3 days') {
-      for (let i = 0; i < 3; i++) {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === 'Last Week') {
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === 'Last 2 Week') {
-      for (let i = 0; i < 14; i++) {
-        const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-        dates.unshift(date.toLocaleDateString());
-      }
-    } else if (period === '1 month') {
-      const date = new Date();
-      const month = date.getMonth();
-      for (let i = 0; i < 30; i++) {
-        const newDate = new Date();
-        newDate.setMonth(month);
-        newDate.setDate(date.getDate() - i);
-        dates.unshift(newDate.toLocaleDateString());
-      }
+    switch (period) {
+      case 'Last 4 Hours':
+        dates = generateDates(4, 'hours');
+        break;
+      case 'Last 12 Hours':
+        dates = generateDates(12, 'hours');
+        break;
+      case 'Last 24 Hours':
+        dates = generateDates(24, 'hours');
+        break;
+      case 'Last 3 days':
+        dates = generateDates(3, 'days');
+        break;
+      case 'Last 2 Week':
+        dates = generateDates(14, 'days');
+        break;
+      case '1 month':
+        dates = generateDates(30, 'days');
+        break;
+      default:
+        dates = generateDates(7, 'days');
+        break;
     }
 
     console.log(dates);
     setSelectlabel(dates);
+  };
+
+  const generateDates = (
+    count: number,
+    unit: moment.unitOfTime.DurationConstructor
+  ) => {
+    const dates: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const date = moment().subtract(i, unit);
+      dates.unshift(date.format('D MMMM'));
+    }
+    return dates;
   };
 
   useEffect(() => {
@@ -97,21 +101,70 @@ const App: React.FC = () => {
     ],
   };
 
+  const hoverLine = {
+    id: 'hoverLine',
+    afterDraw: function (chart: any, args: any) {
+      const {
+        ctx,
+        tooltip,
+        chartArea: { top, bottom, left, right, width, height },
+        scales: { x, y },
+      } = chart;
+      console.log(tooltip);
+      if (tooltip?.dataPoints && tooltip.dataPoints.length > 0) {
+        const xCoor = x.getPixelForValue(tooltip.dataPoints[0].dataIndex);
+        const yCoor = y.getPixelForValue(tooltip.dataPoints[0].parsed.y);
+        console.log(tooltip);
+        ctx.save();
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'black';
+        ctx.setLineDash([6, 6]);
+        ctx.moveTo(xCoor, yCoor);
+        ctx.lineTo(xCoor, bottom);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.setLineDash([]);
+      }
+    },
+  };
+
   const options = {
     plugins: {
+      tooltip: {
+        padding: {
+          left: 20,
+          right: 20,
+          top: 4,
+          bottom: 4,
+        },
+        callbacks: {
+          title: function (context: any) {
+            return `Zone-${chartType}`;
+          },
+        },
+        titleColor: 'gray',
+        bodyAlign: 'center' as const,
+        yAlign: 'bottom' as const,
+      },
       legend: {
         display: false,
       },
+      ...hoverLine,
     },
     scales: {
       x: {
         grid: {
           display: false,
+          borderColor: 'green',
+          borderWidth: 5,
         },
       },
       y: {
+        border: {
+          display: false,
+        },
         grid: {
-          drawBorder: false,
           color: (context: any) => {
             if (context.tick.value === 0) {
               return 'rgba(0, 0, 0)';
@@ -131,10 +184,8 @@ const App: React.FC = () => {
         handlePeriodChange={handlePeriodChange}
         selectedPeriod={selectedPeriod}
       />
-
       <Zones />
-
-      <Line data={chartData} options={options} />
+      <Line data={chartData} options={options} height={80} />
     </div>
   );
 };
