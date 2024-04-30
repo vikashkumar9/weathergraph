@@ -13,26 +13,35 @@ import Zones from './components/Zones';
 
 const App: React.FC = () => {
   useEffect(() => {
+    // Register necessary Chart.js components
     Chart.register(
       LinearScale,
       LineElement,
       PointElement,
       CategoryScale,
-
       Tooltip
     );
   }, []);
 
+  // State variables
   const [chartType, setChartType] = useState<string>('temperature');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('Last Week');
   const [selectlabel, setSelectlabel] = useState<string[]>([]);
+  const [zone, setZone] = useState<string>('1'); // State for selected zone
 
+  // Function to handle change in chart type (radio buttons)
   const handleChartTypeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setChartType(event.target.value);
   };
 
+  // Function to handle change in selected zone
+  const handleZoneChange = (newZone: string) => {
+    setZone(newZone);
+  };
+
+  // Function to handle change in selected period (dropdown)
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
     let dates: string[] = [];
@@ -62,10 +71,13 @@ const App: React.FC = () => {
     }
     setSelectlabel(dates);
   };
+
+  // Effect to handle period change
   useEffect(() => {
     handlePeriodChange(selectedPeriod);
   }, [selectedPeriod]);
 
+  // Function to generate dates based on count and unit
   const generateDates = (
     count: number,
     unit: moment.unitOfTime.DurationConstructor
@@ -73,11 +85,16 @@ const App: React.FC = () => {
     const dates: string[] = [];
     for (let i = 0; i < count; i++) {
       const date = moment().subtract(i, unit);
-      dates.unshift(date.format('D MMMM'));
+      if (unit === 'hours') {
+        dates.unshift(date.format('ha')); // Format time in hours with 'am/pm' indication
+      } else {
+        dates.unshift(date.format('D MMMM')); // Default format for other units
+      }
     }
     return dates;
   };
 
+  // Data for the chart based on chart type
   let data;
   if (chartType === 'ppm') {
     data = [5, 12, 11, 13, 4, -11, 1, 3];
@@ -87,6 +104,7 @@ const App: React.FC = () => {
     data = [5, 4, 7, 6, 3, 3, 7, 9];
   }
 
+  // Chart data including multiple datasets
   const chartData = {
     labels: selectlabel,
     datasets: [
@@ -96,9 +114,16 @@ const App: React.FC = () => {
         borderColor: 'red',
         tension: 0.1,
       },
+      {
+        data: [1, 2, 3, 5, 7, 4, 5, 7], // Sample data for demonstration
+        fill: false,
+        borderColor: 'blue',
+        tension: 0.1,
+      },
     ],
   };
 
+  // Plugins for additional chart functionalities
   const plugins: any[] = [
     {
       afterDraw: (chart: {
@@ -107,7 +132,6 @@ const App: React.FC = () => {
         ctx?: any;
         chartArea: any;
       }) => {
-        console.log(chart.scales);
         if (chart.tooltip._active && chart.tooltip._active.length) {
           const activePoint = chart.tooltip._active[0];
           const { ctx } = chart;
@@ -130,9 +154,11 @@ const App: React.FC = () => {
     },
   ];
 
+  // Options for configuring the appearance of the chart
   const options = {
     plugins: {
       tooltip: {
+        // padding in tootlip
         padding: {
           left: 20,
           right: 20,
@@ -141,7 +167,7 @@ const App: React.FC = () => {
         },
         callbacks: {
           title: function (context: any) {
-            return `Zone-${chartType}`;
+            return `Zone${zone}-${chartType}`; // Dynamically display zone and chart type in tooltip title
           },
         },
         titleColor: 'gray',
@@ -156,14 +182,13 @@ const App: React.FC = () => {
       x: {
         grid: {
           display: false,
-          borderColor: 'green',
-          borderWidth: 5,
         },
       },
       y: {
         border: {
           display: false,
         },
+        // for dark horizontal line at 0 and light horizontal line at non zero
         grid: {
           color: (context: any) => {
             if (context.tick.value === 0) {
@@ -178,13 +203,16 @@ const App: React.FC = () => {
 
   return (
     <div className='container bg-light p-4 rounded my-5'>
+      {/* GraphHeader component for selecting chart type and period */}
       <GraphHeader
         chartType={chartType}
         handleChartTypeChange={handleChartTypeChange}
         handlePeriodChange={handlePeriodChange}
         selectedPeriod={selectedPeriod}
       />
-      <Zones />
+      {/* Zones component for selecting zone */}
+      <Zones zone={zone} onZoneChange={handleZoneChange} />
+      {/* Line chart component */}
       <Line data={chartData} options={options} height={80} plugins={plugins} />
     </div>
   );
