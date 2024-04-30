@@ -18,6 +18,7 @@ const App: React.FC = () => {
       LineElement,
       PointElement,
       CategoryScale,
+
       Tooltip
     );
   }, []);
@@ -59,10 +60,11 @@ const App: React.FC = () => {
         dates = generateDates(7, 'days');
         break;
     }
-
-    console.log(dates);
     setSelectlabel(dates);
   };
+  useEffect(() => {
+    handlePeriodChange(selectedPeriod);
+  }, [selectedPeriod]);
 
   const generateDates = (
     count: number,
@@ -75,10 +77,6 @@ const App: React.FC = () => {
     }
     return dates;
   };
-
-  useEffect(() => {
-    console.log('Period=>' + selectedPeriod);
-  }, [selectedPeriod]);
 
   let data;
   if (chartType === 'ppm') {
@@ -101,33 +99,36 @@ const App: React.FC = () => {
     ],
   };
 
-  const hoverLine = {
-    id: 'hoverLine',
-    afterDraw: function (chart: any, args: any) {
-      const {
-        ctx,
-        tooltip,
-        chartArea: { top, bottom, left, right, width, height },
-        scales: { x, y },
-      } = chart;
-      console.log(tooltip);
-      if (tooltip?.dataPoints && tooltip.dataPoints.length > 0) {
-        const xCoor = x.getPixelForValue(tooltip.dataPoints[0].dataIndex);
-        const yCoor = y.getPixelForValue(tooltip.dataPoints[0].parsed.y);
-        console.log(tooltip);
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'black';
-        ctx.setLineDash([6, 6]);
-        ctx.moveTo(xCoor, yCoor);
-        ctx.lineTo(xCoor, bottom);
-        ctx.stroke();
-        ctx.closePath();
-        ctx.setLineDash([]);
-      }
+  const plugins: any[] = [
+    {
+      afterDraw: (chart: {
+        tooltip?: any;
+        scales?: any;
+        ctx?: any;
+        chartArea: any;
+      }) => {
+        console.log(chart.scales);
+        if (chart.tooltip._active && chart.tooltip._active.length) {
+          const activePoint = chart.tooltip._active[0];
+          const { ctx } = chart;
+          const { x, y } = activePoint.element;
+          const topY = y;
+          const bottomY = chart.scales.y.bottom;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = 'black';
+          ctx.setLineDash([6, 6]);
+          ctx.moveTo(x, topY);
+          ctx.lineTo(x, bottomY);
+          ctx.stroke();
+          ctx.closePath();
+          ctx.setLineDash([]);
+        }
+      },
     },
-  };
+  ];
 
   const options = {
     plugins: {
@@ -150,7 +151,6 @@ const App: React.FC = () => {
       legend: {
         display: false,
       },
-      ...hoverLine,
     },
     scales: {
       x: {
@@ -185,7 +185,7 @@ const App: React.FC = () => {
         selectedPeriod={selectedPeriod}
       />
       <Zones />
-      <Line data={chartData} options={options} height={80} />
+      <Line data={chartData} options={options} height={80} plugins={plugins} />
     </div>
   );
 };
