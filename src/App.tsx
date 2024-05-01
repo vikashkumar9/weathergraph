@@ -13,7 +13,6 @@ import Zones from './components/Zones';
 
 const App: React.FC = () => {
   useEffect(() => {
-    // Register necessary Chart.js components
     Chart.register(
       LinearScale,
       LineElement,
@@ -23,13 +22,10 @@ const App: React.FC = () => {
     );
   }, []);
 
-  // State variables
   const [chartType, setChartType] = useState<string>('temperature');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('Last Week');
   const [selectlabel, setSelectlabel] = useState<string[]>([]);
-  const [zone, setZone] = useState<string>('1'); // State for selected zone
-
-  // Function to handle change in chart type (radio buttons)
+  const [zone, setZone] = useState<string>('1');
   const handleChartTypeChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -41,7 +37,6 @@ const App: React.FC = () => {
     setZone(newZone);
   };
 
-  // Function to handle change in selected period (dropdown)
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
     let dates: string[] = [];
@@ -72,7 +67,6 @@ const App: React.FC = () => {
     setSelectlabel(dates);
   };
 
-  // Effect to handle period change
   useEffect(() => {
     handlePeriodChange(selectedPeriod);
   }, [selectedPeriod]);
@@ -86,15 +80,14 @@ const App: React.FC = () => {
     for (let i = 0; i < count; i++) {
       const date = moment().subtract(i, unit);
       if (unit === 'hours') {
-        dates.unshift(date.format('ha')); // Format time in hours with 'am/pm' indication
+        dates.unshift(date.format('ha')); //graph labels based on hours
       } else {
-        dates.unshift(date.format('D MMMM')); // Default format for other units
+        dates.unshift(date.format('D MMMM')); //graph labels based on days
       }
     }
     return dates;
   };
 
-  // Data for the chart based on chart type
   let data;
   if (chartType === 'ppm') {
     data = [5, 12, 11, 13, 4, -11, 1, 3];
@@ -104,7 +97,6 @@ const App: React.FC = () => {
     data = [5, 4, 7, 6, 3, 3, 7, 9];
   }
 
-  // Chart data including multiple datasets
   const chartData = {
     labels: selectlabel,
     datasets: [
@@ -115,7 +107,7 @@ const App: React.FC = () => {
         tension: 0.1,
       },
       {
-        data: [1, 2, 3, 5, 7, 4, 5, 7], // Sample data for demonstration
+        data: [1, 2, 3, 5, 7, 4, 5, 7],
         fill: false,
         borderColor: 'blue',
         tension: 0.1,
@@ -123,7 +115,6 @@ const App: React.FC = () => {
     ],
   };
 
-  // Plugins for additional chart functionalities
   const plugins: any[] = [
     {
       afterDraw: (chart: {
@@ -154,11 +145,9 @@ const App: React.FC = () => {
     },
   ];
 
-  // Options for configuring the appearance of the chart
   const options = {
     plugins: {
       tooltip: {
-        // padding in tootlip
         padding: {
           left: 20,
           right: 20,
@@ -188,13 +177,13 @@ const App: React.FC = () => {
         border: {
           display: false,
         },
-        // for dark horizontal line at 0 and light horizontal line at non zero
+
         grid: {
           color: (context: any) => {
             if (context.tick.value === 0) {
-              return 'rgba(0, 0, 0)';
+              return 'rgba(0, 0, 0,0.2)'; //dark horizontal line  on 0 axix
             }
-            return 'rgba(0, 0, 0, 0.1)';
+            return 'rgba(255, 255, 255, 0.1)'; //white horizontal line  on non-zero axix
           },
         },
       },
@@ -203,17 +192,24 @@ const App: React.FC = () => {
 
   return (
     <div className='container bg-light p-4 rounded my-5'>
-      {/* GraphHeader component for selecting chart type and period */}
       <GraphHeader
         chartType={chartType}
         handleChartTypeChange={handleChartTypeChange}
         handlePeriodChange={handlePeriodChange}
         selectedPeriod={selectedPeriod}
       />
-      {/* Zones component for selecting zone */}
+
+      {/* select zone  */}
       <Zones zone={zone} onZoneChange={handleZoneChange} />
-      {/* Line chart component */}
-      <Line data={chartData} options={options} height={80} plugins={plugins} />
+      <div className='container  p-4 rounded my-5 bg-transparent'>
+        {/*background color pg graph is white*/}
+        <Line
+          data={chartData}
+          options={options}
+          height={80}
+          plugins={plugins}
+        />
+      </div>
     </div>
   );
 };

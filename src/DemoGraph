@@ -1,0 +1,107 @@
+// import React from 'react';
+// import { Form, Dropdown, Button } from 'react-bootstrap';
+// import { DOWNLOAD_WHITE_ICON } from '../../Constants/images';
+// import Zones from './Zones';
+
+// interface GraphHeaderProps {
+//   chartType: string;
+//   handleChartTypeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+//   handlePeriodChange: (period: string) => void;
+//   selectedPeriod: string;
+// }
+
+// export const GraphHeader: React.FC<GraphHeaderProps> = ({
+//   chartType,
+//   handleChartTypeChange,
+//   handlePeriodChange,
+//   selectedPeriod,
+// }) => {
+//   return (
+//     <div className='container'>
+//       <div className='historical-data-wrapper-left d-flex flex-column flex-md-row justify-content-between align-items-center'>
+//         <h6 className='historical-data-name text-muted fs-6 fw-bold'>
+//           Historical Data For Zones
+//         </h6>
+//         <div className='dropdown-wrapper mb-3 mb-md-0'>
+//           <Dropdown>
+//             <Dropdown.Toggle
+//               variant='success'
+//               id='dropdown-basic'
+//               className='rounded-pill bg-white text-black border-white'
+//             >
+//               {selectedPeriod}
+//             </Dropdown.Toggle>
+//             <Dropdown.Menu
+//               className='dropdown-menu-dark'
+//               style={{ opacity: 0.7, borderRadius: '20px' }}
+//             >
+//               <Dropdown.Item onClick={() => handlePeriodChange('Last 4 Hours')}>
+//                 Last 4 Hours
+//               </Dropdown.Item>
+//               <Dropdown.Item
+//                 onClick={() => handlePeriodChange('Last 12 Hours')}
+//               >
+//                 Last 12 Hours
+//               </Dropdown.Item>
+//               <Dropdown.Item
+//                 onClick={() => handlePeriodChange('Last 24 Hours')}
+//               >
+//                 Last 24 Hours
+//               </Dropdown.Item>
+//               <Dropdown.Item onClick={() => handlePeriodChange('Last 3 days')}>
+//                 Last 3 days
+//               </Dropdown.Item>
+//               <Dropdown.Item onClick={() => handlePeriodChange('Last Week')}>
+//                 Last Week
+//               </Dropdown.Item>
+//               <Dropdown.Item onClick={() => handlePeriodChange('Last 2 Week')}>
+//                 Last 2 Week
+//               </Dropdown.Item>
+//               <Dropdown.Item onClick={() => handlePeriodChange('1 month')}>
+//                 1 month
+//               </Dropdown.Item>
+//             </Dropdown.Menu>
+//           </Dropdown>
+//         </div>
+//         <div className='radio-sec  mb-3 mb-md-0'>
+//           <div className='radio-left'>
+//             <Form.Check
+//               label='PPM'
+//               type='radio'
+//               value='ppm'
+//               checked={chartType === 'ppm'}
+//               onChange={handleChartTypeChange}
+//             />
+//           </div>
+//           <div className='radio-left'>
+//             <Form.Check
+//               label='Temperature'
+//               type='radio'
+//               value='temperature'
+//               checked={chartType === 'temperature'}
+//               onChange={handleChartTypeChange}
+//             />
+//           </div>
+//           <div className='radio-left'>
+//             <Form.Check
+//               label='Humidity'
+//               type='radio'
+//               value='humidity'
+//               checked={chartType === 'humidity'}
+//               onChange={handleChartTypeChange}
+//             />
+//           </div>
+//         </div>
+//         <div className='historical-data-wrapper-right'>
+//           <Button className='form-btn'>
+//             Download Report
+//             <img src={DOWNLOAD_WHITE_ICON} alt='download icon' />
+//           </Button>
+//         </div>
+//       </div>
+//       <Zones />
+//     </div>
+//   );
+// };
+
+// export default GraphHeader;
