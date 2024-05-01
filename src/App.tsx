@@ -80,9 +80,9 @@ const App: React.FC = () => {
     for (let i = 0; i < count; i++) {
       const date = moment().subtract(i, unit);
       if (unit === 'hours') {
-        dates.unshift(date.format('ha')); //graph labels based on hours
+        dates.unshift(date.format('hh:mm')); // Format time in hours with 'am/pm' indication
       } else {
-        dates.unshift(date.format('D MMMM')); //graph labels based on days
+        dates.unshift(date.format('D MMMM')); // Default format for other units
       }
     }
     return dates;
